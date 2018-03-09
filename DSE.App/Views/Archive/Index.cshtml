@@ -1,0 +1,55 @@
+﻿@model IEnumerable<DSE.DataAccess.Models.Archive>
+
+@{
+    ViewBag.Title = "";
+}
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li class="active"><a href="#"> Archive </a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid archive">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default ">
+                @*<div class="panel-heading panel-heading-divider">Archive <span class="panel-subtitle"></span></div>*@
+                <div class="panel-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.ArchivedName)
+                                </th>
+                                <th>
+                                    @Html.DisplayNameFor(model => model.Date)
+                                </th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="mdi mdi-hc-2x mdi-file-text text-success"></span>
+                                        @Html.DisplayFor(modelItem => item.ArchivedName)
+                                    </td>
+                                    <td>
+                                        @{
+                                            DateTime date = (DateTime)item.Date;
+                                            string dateString = date.ToString("MMM dd, yyyy hh:mm:ss tt");
+                                        }
+                                        @dateString
+                                    </td>
+                                    <td>
+                                        @Html.ActionLink("Detail", "Index", "Home", new { archiveName = item.ArchivedName }, new { @class = "btn btn-default" })
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

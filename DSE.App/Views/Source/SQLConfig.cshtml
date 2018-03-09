@@ -1,0 +1,218 @@
+﻿@model DSE.DataAccess.Models.Source
+@using DSE.App.Helpers
+@using System.Data;
+
+@{
+    ViewBag.Title = "Data Sources";
+}
+
+
+
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","Source")">Data Sources</a></li>
+        <li><a href="#">@Model.SourceName </a></li>
+        <li class="active"><a href="#"> Connection </a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        @using (Html.BeginForm("SQLConfig", "Source", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal group-border-dashed" }))
+        {
+        <!--Responsive table-->
+            <div class="col-sm-12">
+
+
+                <div class="panel panel-default ">
+                    <div class="panel-heading panel-heading-divider">SQL Connection Setting <span class="panel-subtitle">Config the connection information of source</span></div>
+                    <div class="panel-body">
+
+                        @if (ViewBag.ErrorMessage != null && ViewBag.ErrorMessage.Length > 0)
+                        {
+                            <div role="alert" class="alert alert-warning alert-icon alert-icon-border alert-dismissible">
+                                <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                                <div class="message">
+                                    <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Error!</strong> @ViewBag.ErrorMessage.
+                                </div>
+                            </div>
+                            if (!ViewData.ModelState.IsValid)
+                            {
+                                <div role="alert" class="alert alert-warning alert-icon alert-icon-border alert-dismissible">
+                                    <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                                    <div class="message">
+                                        <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Warning!</strong> @Html.ValidationSummary(true, "")
+                                    </div>
+                                </div>
+                            }
+                        }
+
+                        @if (ViewBag.SuccessMessage != null && ViewBag.SuccessMessage.Length > 0)
+                        {
+                            <div role="alert" class="alert alert-success alert-icon alert-icon-border alert-dismissible">
+                                <div class="icon"><span class="mdi mdi-check"></span></div>
+                                <div class="message">
+                                    <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Good!</strong> @ViewBag.SuccessMessage.
+                                </div>
+                            </div>
+
+                        }
+
+
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.SourceId)
+                        @Html.HiddenFor(model => model.ClientId)
+                        @Html.HiddenFor(model => model.CreateBy)
+                        @Html.HiddenFor(model => model.UpdateBy)
+                        @Html.HiddenFor(model => model.SourceType)
+                        @Html.HiddenFor(model => model.Source_Server_Salt)
+                        @Html.HiddenFor(model => model.Source_Server_Port)
+                        @Html.HiddenFor(model => model.Is_Scheduled)
+                        @Html.HiddenFor(model => model.Schedule_Start_Time)
+                        @Html.HiddenFor(model => model.Schedule_Interval)
+                        @Html.HiddenFor(model => model.Is_Active)
+                        @Html.HiddenFor(model => model.UpdateDate)
+                        @Html.HiddenFor(model => model.CreateDate)
+                        @Html.HiddenFor(model => model.Source_Server_FilePath)
+
+
+                        <!-- User Name-->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.SourceName, htmlAttributes: new { @class = "control-label col-sm-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.SourceName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                @Html.MyValidationMessageFor(model => model.SourceName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Server Name or IP</label>
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Source_ServerName, new { htmlAttributes = new { @class = "form-control " } })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Login</label>
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Source_Server_Username, new { htmlAttributes = new { @class = "form-control " } })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Password</label>
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Source_Server_Password, new { htmlAttributes = new { @class = "form-control " , type="password" } })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Target Database Name</label>
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Source_Server_DatabaseName, new { htmlAttributes = new { @class = "form-control " } })
+                            </div>
+                        </div>                       
+                        <div class="form-group">
+                            <div class="col-sm-6 col-md-offset-3">
+                                <input type="submit" value="Save" class="btn btn-primary" />
+                                <input type="button" id="btn_check_connection" value="Test connection" onclick="checkConnection()" class="btn btn-default" /> 
+                                <span style="display:none" id="connectionCheckLoader" class="mdi loader"></span>
+                                <span id="connetionStatus" style="display:none; color:forestgreen" class="mdi mdi-check">Connection validated</span>
+                                <span id="connetionStatusFalse" style="display:none;color:red" class="mdi mdi-alert-triangle">Failed to connect</span>
+                            </div>
+                        </div>                       
+                       
+                        @if (ViewBag.SuccessMessage != null && ViewBag.SuccessMessage.Length > 0)
+                        {
+                          
+                            <div class="form-group">
+                                <div class="col-sm-6 col-md-offset-3">
+                                    @Html.ActionLink("Go to Mapping", "SQLMapping", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+
+            </div>
+        }
+        
+    </div>
+</div>
+@section scripts{
+
+    <script>
+        $(document).ready(function () {
+            // File input
+            $('.inputfile').each(function () {
+                var $input = $(this),
+                    $label = $input.next('label'),
+                    labelVal = $label.html();
+
+                $input.on('change', function (e) {
+                    var fileName = '';
+
+                    if (this.files && this.files.length > 1)
+                        fileName = (this.getAttribute('data-multiple-caption') || '').replace('{count}', this.files.length);
+                    else if (e.target.value)
+                        fileName = e.target.value.split('\\').pop();
+
+                    if (fileName)
+                        $label.find('span').html(fileName);
+                    else
+                        $label.html(labelVal);
+                });
+            });
+        });
+        function checkConnection() {
+            // build connection string
+            //Server=myServerAddress;Database=myDataBase;User Id=myUsername; Password = myPassword;
+            var cs = "Server=" + $('#Source_ServerName').val() + ";Database=" + $('#Source_Server_DatabaseName').val() + ";User Id=" + $('#Source_Server_Username').val() + ";Password = " + $('#Source_Server_Password').val() + ";";
+
+            // Change buttion state
+            $('#btn_check_connection').prop('value', 'Checking...');
+            $('#btn_check_connection').prop('disabled', 'disabled');
+            $('#connetionStatus').hide();
+            $('#connetionStatusFalse').hide();
+            $('#connectionCheckLoader').css("display", "inline-block");
+           
+
+            // Call API
+
+            var checkAction =  "@Url.Action("CheckConnection","CommonAPI",new {connecion=string.Empty})";
+
+            var jqxhr = $.get("/api/commonapi/checkconnection"+"?connection="+cs, function (data) {
+                //alert("success");
+                console.log(data);
+            })
+              .done(function (data) {
+                  console.log(data);
+                  if (data) {
+                      $('#connetionStatusFalse').hide();
+                      $('#connetionStatus').css("display","inline-block");
+                  } else {
+                      $('#connetionStatus').hide();
+                      $('#connetionStatusFalse').css("display","inline-block");
+                  }
+              })
+              .fail(function () {
+                  console.log("Error");
+                  $('#connetionStatus').hide();
+                  $('#connetionStatusFalse').css("display", "inline-block");
+              })
+              .always(function () {
+                  
+                  $('#btn_check_connection').prop('value', 'Test Connection');
+                  $('#btn_check_connection').prop('disabled', '');
+                  $('#connectionCheckLoader').css("display", "none");
+              });
+
+
+            // Show result
+        }
+    </script>
+
+}
+
+
+
+
+
+
+

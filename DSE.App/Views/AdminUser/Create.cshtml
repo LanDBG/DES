@@ -1,0 +1,137 @@
+﻿@model DSE.DataAccess.Models.User
+@using DSE.App.Helpers
+
+@{
+    ViewBag.Title = "User";
+    List<SelectListItem> Roles = ViewBag.Roles as List<SelectListItem>;
+    List<SelectListItem> Clients = ViewBag.Clients as List<SelectListItem>;
+}
+
+<div class="page-head">
+    <h2 class="page-head-title"> Create User</h2>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","AdminUser")">Users</a></li>
+        <li class="active"><a href="#">Create</a></li>
+
+    </ol>
+</div>
+<!--Basic Elements-->
+<div class="main-content container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                @if (ViewBag.Edit != null)
+            {
+                if (ViewData.ModelState.IsValid)
+                {
+                        <div role="alert" class="alert alert-success alert-dismissible">
+                            <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><span class="icon mdi mdi-check"></span><strong>Good!</strong> Create successful.
+                        </div>
+                    }
+                    else
+                    {
+                        <div role="alert" class="alert alert-danger alert-dismissible">
+                            <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><span class="icon mdi mdi-close-circle-o"></span><strong>Error!</strong> @Html.ValidationMessage("CustomError")
+                        </div>
+                    }
+                }
+                <div class="panel-body">
+                    @using (Html.BeginForm("Create", "AdminUser", FormMethod.Post, new { @class = "form-horizontal group-border-dashed" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.UserId)
+                        @Html.HiddenFor(model => model.LastLoginDate)
+                        @Html.HiddenFor(model => model.ModificationDate)
+                        @Html.HiddenFor(model => model.CreateDate)
+
+                        <!-- User Name-->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.UserName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Password</label>
+                            <div class="col-sm-3">
+                                <input id="pass2" type="password" name="Password" required="" placeholder="Password" class="form-control">
+                            </div>
+                            <div class="col-sm-3">
+                                <input type="password" required="" data-parsley-equalto="#pass2" placeholder="Re-Type Password" class="form-control">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.FirstName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.LastName)
+                            </div>
+                        </div>
+                        <!-- Role -->
+                        @*<div class="form-group">
+                            @Html.LabelFor(model => model.RoleId, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.DropDownListFor(model => model.RoleId, Roles, new { @class = "form-control" })
+                                @Html.MyValidationMessageFor(model => model.RoleId)
+                            </div>
+                        </div>*@
+                        <!--Client Id-->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ClientId, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.DropDownListFor(model => model.ClientId, Clients, new { @class = "form-control" })
+                                @Html.MyValidationMessageFor(model => model.ClientId)
+                            </div>
+                        </div>
+                        <!-- Address -->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.Address)
+                            </div>
+                        </div>
+                        <!-- Email -->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.Email)
+                            </div>
+                        </div>
+                        <!-- Phone -->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.Phone)
+                            </div>
+                        </div>
+                        <!-- Active -->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.IsActive, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.IsActive, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.IsActive)
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-6 col-md-offset-3">
+                                <input type="submit" value="Save" class="btn btn-primary" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>

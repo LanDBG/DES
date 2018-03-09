@@ -1,0 +1,111 @@
+﻿
+@{
+    ViewBag.Title = "Detail";
+}
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="/">Home</a></li>
+        <li class="active"><a href="#"> Detail KPI </a></li>
+    </ol>
+    <div>
+        <p style="margin: 0">Lastupdate: <span id="last-update"></span></p> 
+    </div>
+</div>
+<div class="main-content container-fluid">
+    <div class="panel panel-default kpi-update">
+        
+        <form class="tab-container"  method="post" , action="@Url.Action("Update","Home", new { archiveName = ViewBag.archiveName})">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#info" data-toggle="tab">Site Information</a></li>
+                <li><a href="#attendance" data-toggle="tab">Attendance</a></li>
+                <li><a href="#projects" data-toggle="tab">Projects</a></li>
+            </ul>
+            <div class="tab-content">
+                <div id="info" class="tab-pane active cont">
+                    <div id="formkpi_tab1" class="form-horizontal group-border-dashed">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6 xs-pt-5 text-right">
+                                <input type="submit" value="Update" class="btn btn-success" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="attendance" class="tab-pane cont">
+                    <div id="formkpi_tab2" class="form-horizontal group-border-dashed">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6 xs-pt-5 text-right">
+                                <input type="submit" value="Update" class="btn btn-success" />
+                            </div>
+                        </div>
+                    </div>                </div>
+                <div id="projects" class="tab-pane">
+                    <div id="formkpi_tab3" class="form-horizontal group-border-dashed">
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label"></label>
+                            <div class="col-sm-6 xs-pt-5 text-right">
+                                <input type="submit" value="Update" class="btn btn-success" />
+                            </div>
+                        </div>
+                    </div>         
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        let kpi = @Html.Raw(Json.Encode(ViewBag.kpi));
+        for(i in kpi){
+            if(!(i.indexOf("_tab") > 0 || i == "o_target_kpi_id")){
+                continue;
+            }
+            let value = kpi[i];
+            let label = i.replace("_tab1", "")
+                .replace("_tab2", "")
+                .replace("_tab3", "")
+                .replace(/_/g, " ");
+            if(value == null || value == "null"){
+                value = "";
+            }
+
+            let formGroup = `
+                    <div class="form-group ${i == "o_target_kpi_id" ? "hide" : ""}">
+                      <label class="col-sm-3 control-label">${label}</label>
+                      <div class="col-sm-6 xs-pt-5">
+                        <input type="text" value="${value}" id="${i}" name="${i}" class="form-control input-xs" ${i == "o_target_kpi_id" ? "readonly" : ""}>
+                      </div>
+                    </div>
+                `;
+            if(i.indexOf("_tab1") > 0 || i == "o_target_kpi_id"){
+                $("#formkpi_tab1").append(formGroup);
+            }
+
+            if(i.indexOf("_tab2") > 0){
+                $("#formkpi_tab2").append(formGroup);
+            }
+
+            if(i.indexOf("_tab3") > 0){
+                $("#formkpi_tab3").append(formGroup);
+            }
+            
+        }
+
+        let bottomButton = `
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"></label>
+                        <div class="col-sm-6 xs-pt-5 text-right">
+                            <input type="submit" value="Update" class="btn btn-success"/>
+                        </div>
+                    </div>
+                    `;
+        $("#formkpi_tab1").append(bottomButton);
+        $("#formkpi_tab2").append(bottomButton);
+        $("#formkpi_tab3").append(bottomButton);
+        $('#last-update').append(moment(kpi["modification_date"]).format("MMM DD, YYYY hh:mm:ss A"));
+    </script>
+
+}

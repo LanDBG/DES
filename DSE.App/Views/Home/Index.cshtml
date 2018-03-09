@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "";
+    List<string>
+    fieldsName = ViewBag.fieldsName;
+    ViewBag.Collap = true;
+
+    string startDate = ViewBag.startDate != null ? ((DateTime)ViewBag.startDate).ToString("MMM dd, yyyy") : "";
+    string endDate = ViewBag.endDate != null ? ((DateTime)ViewBag.endDate).ToString("MMM dd, yyyy") : "";
+
+    string dateRange = ViewBag.startDate != null && ViewBag.endDate != null ? $"<b>From:</b> {startDate} <b>to:</b> {endDate}" : "";
+    }
+
+    <div class="main-content container-fluid main-kpi">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-default ">
+                    <div class="panel-heading panel-heading-divider">
+                        KPI @ViewBag.archiveName
+                        <span class="panel-subtitle">@Html.Raw(dateRange) </span>
+                        <a class="mdi mdi-settings btn" style="float: right" onclick="openModal()"></a>
+                        <a href="@Url.Action(" Index","Archive")" class="mdi mdi-folder btn" style="float: right"></a>
+                        <span class="panel-subtitle"></span>
+                    </div>
+                    <div class="panel-body">
+                        <table title="Double click to edit row" class="table table-striped table-hover table-fw-widget" id="logtable"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="mod-update-fiels" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="max-width: 900px">
+                    <div class="modal-header">
+                        <button type="button" data-dismiss="modal" aria-hidden="true" class="close"><span class="mdi mdi-close"></span></button>
+                        <h3>Show fields</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div id="config-modal">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="javascript:updateConfig()" class="btn btn-primary modal-close">Update</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @section css {
+    <link href="~/Content/lib/datatables/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+    <style>
+        #logtable tr {
+            cursor: pointer;
+        }
+    </style>
+    }
+    @section scripts{
+    <script src="~/Content/lib/datatables/js/jquery.dataTables.js"></script>
+    <script src="~/Content/lib/datatables/js/dataTables.bootstrap.js"></script>
+
+    <script>
+        let fields = @Html.Raw(Json.Encode(fieldsName));
+        // fields.sort();
+        let fieldsType = @Html.Raw(Json.Encode(ViewBag.fieldsType));
+        // fieldsType.sort();
+        let valueFields = fields.filter((field, index) => {
+            return field.indexOf("_tab") > 0 || (field == "o_target_kpi_id")
+        })
+
+        let showFieldsString = "@ViewBag.showFields";
+        let showFields = showFieldsString.split(",");
+
+        function getDataType(fieldName) {
+            let field = fieldsType.find((f, index) => {
+                return f.ColumnName == fieldName
+            })
+
+            return field && field.DataType;
+        }
+
+        //console.log("showFields")
+        //console.log(showFields)
+        //console.log("fields")
+        //console.log(fields)
+        //console.log("valueFields")
+        //console.log(valueFields)
+
+        let columns = [];
+        for (let i in valueFields) {
+            let item = fields[i];
+            let dataType = getDataType(item);
+            columns.push({
+                title: item.replace("_tab1", "").replace("_tab2","").replace("_tab3","").replace(/_/g, " "),
+                data: function(data){
+                    if(data[item] == null || data[item] =="null"){
+                        data[item] = "";
+                    }
+
+                    let content = data[item];
+                    if(isNaN(content)){
+                        return content;
+                    }
+                    else {
+                        let number
+                        switch (dataType) {
+                            case 'money':
+                                number = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(content);//"$ " + content.toFixed(3).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
+                                break;
+                            case 'decimal':
+                                number = new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2 }).format(content)
+                                break;
+                            default:
+                                number = new Intl.NumberFormat('en-US', { style: 'decimal' }).format(content)
+                                break;
+
+                        }
+                        return number
+                    }
+                    return content;
+                },
+                defaultContent: "",
+                visible: showFields.includes(item),
+                className: 'int, money, decimal, float'.includes(dataType) ? 'text-right' : ''
+            })
+        }
+
+        $(document).ready(function () {
+            logTable = $('#logtable').DataTable({
+                'select': {
+                    'style': 'multi',
+                    'selector': 'td:not(:first-child)'
+                },
+                "autoWidth": false,
+                "ordering": true,
+                "processing": true,
+                "serverSide": true,
+                "pageLength": 10,
+                "searching": false,
+                'columns': columns,
+                "scrollX": true,
+                'ajax': {
+                    type: "POST",
+                    contentType: "application/json",
+                    url: '@Url.Action("GetDataTable", "Home", new { id = ViewBag.archiveName })',
+                    data: function (d) {
+                        return JSON.stringify(d);
+                    }
+                },
+            })
+
+            $('#logtable tbody').on('click', 'tr', function () {
+                var data = logTable.row( this ).data();
+                location.href="@Url.Action("detail", "home", new { id = "replaceId", archiveName = ViewBag.archiveName })".replace("replaceId", data["o_target_kpi_id"]);
+            } );
+
+            AddCongif();
+        });
+
+        function AddCongif(){
+            let configCheckbox = [];
+            for(let i in valueFields){
+                let fieldName = valueFields[i];
+                let displayName = fieldName.replace("_tab1", "").replace("_tab2","").replace("_tab3","").replace(/_/g, " ");
+                let checked = showFields.includes(fieldName) ? " checked" : "";
+                let html = `
+                    <div class="col-md-6">
+                        <div class="be-checkbox">
+                          <input id="chk-${fieldName}" type="checkbox" onChange="checkField('${fieldName}')"${checked}>
+                          <label for="chk-${fieldName}">${displayName}</label>
+                        </div>
+                    </div>
+                    `;
+                $("#config-modal").append(html);
+            }
+        }
+
+        function checkField(fieldName){
+            console.log(fieldName);
+            let checked = $("#chk-" + fieldName).is(":checked");
+
+            if(checked) {
+                if(!showFields.includes(fieldName)){
+                    showFields.push(fieldName);
+                }
+            }
+            else {
+                if(showFields.includes(fieldName)){
+                    showFields.splice(showFields.indexOf(fieldName), 1)
+                }
+            }
+        }
+
+        function updateConfig() {
+            let configString = "";
+            for(let i in showFields){
+                let fieldName = showFields[i];
+
+                if( i == showFields.length - 1) {
+                    configString += fieldName;
+                }
+                else {
+                    configString += fieldName + ","
+                }
+            }
+
+            location.href = '@Url.Action("UpdateKPIShowFields", "Home")' + "?fields=" + configString;
+        }
+
+        function closeModal() {
+            $('#mod-update-fiels').modal('hide')
+        }
+
+        function openModal() {
+            $('#mod-update-fiels').modal('show')
+        }
+
+    </script>
+    }

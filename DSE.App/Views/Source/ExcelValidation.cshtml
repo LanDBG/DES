@@ -1,0 +1,110 @@
+﻿@model DSE.App.Models.ValidateModel
+@{
+    ViewBag.Title = "Data Sources";
+}
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","Source")">Data Sources</a></li>
+        <li><a href="#">@Model.SourceName </a></li>
+        <li class="active"><a href="#"> Validation </a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default ">
+                @*<div class="panel-heading panel-heading-divider">Validation result<span class="panel-subtitle"> @Model.SourceName  </span></div>*@
+                <div class="panel-body">
+
+                    @if (ViewBag.ErrorMessage != null && ViewBag.ErrorMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-warning alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Warning!</strong> @ViewBag.ErrorMessage.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div>
+                                @Html.ActionLink("Validation manually", "ExcelValidation", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                            </div>
+                        </div>
+                    }
+                    @if (Model.ValidationTable != null && Model.ValidationTable.Rows.Count > 0)
+                    {
+                        @*<table class="table table-condensed table-hover table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Table Name</th>
+                                    <th>Column name</th>
+                                    <th>Data Value</th>
+                                    <th>Data Issue</th>
+                                    <th>Comment</th>
+                                    <th>Number of record</th>
+                                    <th>CreateDate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (DSE.DataAccess.Models.ValidateItem item in Model.ValidationResult)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(modelItem => item.TableName) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.ColumnName) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.DataValue) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.DataIssue) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.Comment) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.NumOfRecord) </td>
+                                        <td>@Html.DisplayFor(modelItem => item.CreateDate) </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>*@
+
+
+
+                        
+
+                            <table class="table table-condensed table-hover table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        @for (int i = 0; i < Model.ValidationTable.Columns.Count; i++)
+                                        {
+                                            <th>@Model.ValidationTable.Columns[i].ColumnName.Replace("_", " ")</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.ValidationTable.Rows.Count; i++)
+                                    {
+                                        <tr>
+                                            @for (int j = 0; j < Model.ValidationTable.Columns.Count; j++)
+                                            {
+                                                <td>@Model.ValidationTable.Rows[i][j].ToString()</td>
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        
+
+                    }
+                    @if (ViewBag.SuccessMessage != null && ViewBag.SuccessMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-success alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-check"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Good!</strong> @ViewBag.SuccessMessage.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div>
+                                @*@Html.ActionLink("Run Analytics Data", "ExcelRunData", new { id = Model.SourceId }, new { @class = "btn btn-primary" })*@
+                                @Html.ActionLink("Validation Manually", "ExcelValidation", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,23 @@
+﻿
+@{
+    string controllerAction = string.Format("{0}/{1}", ViewContext.RouteData.Values["Controller"].ToString(), ViewContext.RouteData.Values["Action"].ToString());
+}
+<div class="be-left-sidebar ">
+    <div class="left-sidebar-wrapper">
+        <a href="#" class="left-sidebar-toggle ">Menu</a>
+        <div class="left-sidebar-spacer">
+            <div class="left-sidebar-scroll">
+                <div class="left-sidebar-content">
+                    <ul class="sidebar-elements">
+                        <li class="divider">Menu</li>
+                        <li class="@(controllerAction == "Home/Index" ? "active": "")">
+                            <a href="@Url.Action("Index","Home")"><i class="icon mdi mdi-home"></i><span>Home</span></a>
+                        </li>
+                       
+                        @Html.Action("LeftMenu", "Source")                       
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

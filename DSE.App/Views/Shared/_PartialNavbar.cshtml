@@ -1,0 +1,72 @@
+﻿@using DSE.Common;
+@using DSE.DataAccess.Models;
+
+@{
+    var user = Session[DSEConstant.User] as User;
+    string fullName = string.Format("{0} {1}", user?.FirstName ?? "", user?.LastName ?? "");
+}
+
+<nav class="navbar navbar-default navbar-fixed-top be-top-header">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a href="#" class="be-toggle-left-sidebar" style="float:left"><span class="icon mdi mdi-menu"></span></a>
+            <a href="@Url.Action("Index","Home")" class="navbar-brand"></a>
+        </div>
+        <div class="be-right-navbar">
+            <ul class="nav navbar-nav navbar-right be-user-nav">
+                <li class="dropdown">
+                    <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="dropdown-toggle"><img src="@String.Format("https://ui-avatars.com/api/?background=6e9c40&color=fff&font-size=0.4&name={0}", fullName)" alt="Avatar"><span class="user-name">@fullName</span></a>
+                    <ul role="menu" class="dropdown-menu">
+                        @{
+
+                            string userName = Session[DSEConstant.UserName] != null ? Session[DSE.Common.DSEConstant.UserName].ToString() : null;
+                            if (String.IsNullOrEmpty(userName))
+                            {
+                                <li>
+                                    <a href="@Url.Action("Login","User")"><span class="icon mdi mdi-power"></span> Login</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li>
+                                    <div class="user-info">
+                                        <div class="user-name">@fullName</div>
+                                        <div class="user-position online">Available</div>
+                                    </div>
+                                </li>
+                                <li><a href="@Url.Action("Edit","User")"><span class="icon mdi mdi-face"></span>Profile</a></li>
+                                <li>
+                                    <a href="@Url.Action("ChangePassword","User")"><span class="icon mdi mdi-lock-open"></span> Change password</a>
+                                </li>
+                                <li>
+                                    <a href="@Url.Action("Logout","User")"><span class="icon mdi mdi-power"></span> Logout</a>
+                                </li>
+
+                            }
+                        }
+                    </ul>
+                </li>
+            </ul>
+            <div class="page-title">@*<span>@ViewBag.Title</span>*@</div>
+            <ul class="nav navbar-nav navbar-right be-icons-nav">
+                <li class="dropdown">
+                    <a href="#" data-toggle="dropdown" role="button" aria-expanded="false" class="dropdown-toggle"><span class="icon mdi mdi-apps"></span></a>
+                    <ul class="dropdown-menu be-connections">
+                        <li>
+                            <div class="list">
+                                <div class="content">
+                                    <div class="row">
+                                        <div class="col-xs-4"><a href="@Url.Action("Index","Source")" class="connection-item"><span class="icon mdi mdi-hc-2x mdi-settings"></span><span>Setting</span></a></div>
+                                        <div class="col-xs-4"><a href="/analytic" class="connection-item"><span class="icon mdi mdi-hc-2x mdi-chart"></span><span>Analytics</span></a></div>
+                                        <div class="col-xs-4"><a href="@Url.Action("Index","AdminUser")" class="connection-item"><span class="icon mdi mdi-hc-2x mdi-account"></span><span>Users</span></a></div>
+                                    </div>
+                                </div>
+                            </div>
+                            @*<div class="footer"> <a href="#">More</a></div>*@
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

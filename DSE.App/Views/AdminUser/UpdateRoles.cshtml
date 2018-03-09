@@ -1,0 +1,116 @@
+﻿
+@model IEnumerable<DSE.DataAccess.Models.UserFuncRoleViewModel>
+@using DSE.DataAccess.Data;
+@using DSE.DataAccess.Models;
+
+@{
+    ViewBag.Title = "UpdateRoles";
+    Layout = "~/Views/Shared/_LayoutBlank.cshtml";
+    var data = Html.Raw(Json.Encode(Model));
+    var roles = ViewBag.roles as List<Role>;
+    var funcs = ViewBag.funcs as List<Function>;
+}
+
+<div class="panel panel-default panel-table">
+    <div class="panel-heading">
+
+    </div>
+    <div class="panel-body">
+        <div style="min-height: 280px;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width:20%;">Function list</th>
+                        @foreach (var role in roles)
+                        {
+                            <th>@role.RoleName</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var func in Model)
+                    {
+                        <tr>
+                            <td>@func.FunctionName</td>
+                            @foreach (var item in func.Roles)
+                            {
+                                <td>
+                                    <div class="be-checkbox be-checkbox-color inline">
+                                        @if (item.IsActive)
+                                        {
+                                            <input fu-id="@func.FunctionId" role-id="@item.RoleId" id="chk-@func.FunctionId-@item.RoleId" type="checkbox" checked="">
+                                        }
+                                        else
+                                        {
+                                            <input fu-id="@func.FunctionId" role-id="@item.RoleId" id="chk-@func.FunctionId-@item.RoleId" type="checkbox">
+                                        }
+                                        <label for="chk-@func.FunctionId-@item.RoleId"></label>
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="row xs-pt-15">
+            <div class="col-xs-12">
+                <p class="text-center">
+                    <a class="btn btn-space btn-primary" id="role-submit">Update</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        var data = (@data);
+        var userId = '@ViewBag.userId';
+        $("[type='checkbox']").change(function() {
+            let funcId = $(this).attr('fu-id');
+            let roleId = $(this).attr('role-id');
+            for (let i in data) {
+                if (data[i].FunctionId == funcId) {
+                    for (let j in data[i].Roles) {
+                        if(data[i].Roles[j].RoleId == roleId){
+                            data[i].Roles[j].IsActive = this.checked;
+                        }
+                    }
+                }
+            }
+        })
+        $("#role-submit").click(function() {
+            for (let i in data) {
+                let roles = "";
+                for (let j in data[i].Roles) {
+                    if(data[i].Roles[j].IsActive){
+                        console.log(data[i].Roles[j])
+                        roles += data[i].Roles[j].RoleId + ',';
+                    }
+                }
+                if(roles){
+                    roles = roles.substring(0, roles.length - 1)
+                }
+                $.ajax({
+                    url: '/AdminUser/UpdateFunctionRole',
+                    data: {
+                        userId: userId,
+                        functionId: data[i].FunctionId,
+                        roles: roles
+                    },
+                    success: (da) => {
+                        console.log(da)
+                        $.gritter.add({
+                            title: 'Success',
+                            text: 'This is a simple Gritter Notification.',
+                            class_name: 'color success'
+                        });
+                        parent.closeModal()
+                    }
+                })
+            }
+
+        })
+    </script>
+}
+

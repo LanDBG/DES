@@ -1,0 +1,47 @@
+﻿@model DSE.DataAccess.Models.LogDetailViewModel
+
+@{
+    ViewBag.Title = "Log";
+}
+<div class="page-head">
+    <ol class="breadcrumb page-head-nav">
+        <li><a href="@Url.Action("Index")">Logs</a></li>
+        <li class="active">Log Detail</li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.job_name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.job_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.step_name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.step_name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.run_status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.run_status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.run_duration)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.run_duration)
+        </dd>
+
+    </dl>
+</div>

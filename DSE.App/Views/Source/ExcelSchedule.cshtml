@@ -1,0 +1,220 @@
+﻿@model DSE.App.Models.RunResultModel
+@using DSE.App.Helpers
+@using System.Data;
+@{
+    ViewBag.Title = "Data Sources";
+}
+
+@section css{
+    <link rel="stylesheet" type="text/css" href="~/Content/lib/datetimepicker/css/bootstrap-datetimepicker.min.css" />
+}
+
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","Source")">Data Sources</a></li>
+        <li><a href="#">@Model.SourceName </a></li>
+        <li class="active"><a href="#"> Schedule &amp; Run</a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="panel panel-default ">
+                <div class="panel-body">
+                    @if (ViewBag.SErrorMessage != null && ViewBag.SErrorMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-warning alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Warning!</strong> @ViewBag.SErrorMessage.
+                            </div>
+                        </div>                       
+                    }
+
+                    @if (ViewBag.SSuccessMessage != null && ViewBag.SSuccessMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-success alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-check"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Good!</strong> @ViewBag.SSuccessMessage.
+                            </div>
+                        </div>                        
+                    }
+
+                    @if (ViewBag.ErrorMessage != null && ViewBag.ErrorMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-warning alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-alert-triangle"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Warning!</strong> @ViewBag.ErrorMessage.
+                            </div>
+                        </div>
+                    }
+
+                    @if (ViewBag.SuccessMessage != null && ViewBag.SuccessMessage.Length > 0)
+                    {
+                        <div role="alert" class="alert alert-success alert-icon alert-icon-border alert-dismissible">
+                            <div class="icon"><span class="mdi mdi-check"></span></div>
+                            <div class="message">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><strong>Good!</strong> @ViewBag.SuccessMessage.
+                            </div>
+                        </div>
+                    }
+
+                    @using (Html.BeginForm("SaveSchedule", "Source", FormMethod.Post, new { enctype = "multipart/form-data", @class = "form-horizontal group-border-dashed" }))
+                    {
+
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.Source.SourceId)
+                        @Html.HiddenFor(model => model.Source.ClientId)
+                        @Html.HiddenFor(model => model.Source.CreateBy)
+                        @Html.HiddenFor(model => model.Source.UpdateBy)
+                        @Html.HiddenFor(model => model.Source.SourceType)
+                        @Html.HiddenFor(model => model.Source.Source_ServerName)
+                        @Html.HiddenFor(model => model.Source.Source_Server_Username)
+                        @Html.HiddenFor(model => model.Source.Source_Server_Password)
+                        @Html.HiddenFor(model => model.Source.Source_Server_Salt)
+                        @Html.HiddenFor(model => model.Source.Source_Server_Port)
+                        @Html.HiddenFor(model => model.Source.Source_Server_DatabaseName)
+                        @Html.HiddenFor(model => model.Source.Is_Active)
+                        @Html.HiddenFor(model => model.Source.UpdateDate)
+                        @Html.HiddenFor(model => model.Source.CreateDate)
+                        @Html.HiddenFor(model => model.Source.Is_Scheduled)
+                        @Html.HiddenFor(model => model.Source.Schedule_Start_Time)
+                        @Html.HiddenFor(model => model.Source.Schedule_Interval)
+
+                        <div class="form-group hide">
+                            @Html.LabelFor(model => model.SourceName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.SourceName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                @Html.MyValidationMessageFor(model => model.SourceName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Enable Schedule</label>
+                            <div class="col-sm-6">
+                               
+                                <div class="switch-button switch-button-yesno">
+                                    <input type="checkbox" checked="" name="swt8" id="swSchedule"><span>
+                                        <label for="swSchedule"></label>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group ">
+                            <label class="col-sm-3 control-label">File Path</label>
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.Source.Source_Server_FilePath, new { htmlAttributes = new { @class = "form-control " } })
+                            </div>
+                        </div>
+
+                        <div class="form-group ">
+                            <label class="col-sm-3 control-label">Frequency</label>
+                            <div class="col-sm-6">
+                                <div class="be-radio inline">
+                                    <input type="radio" @((Model.Source.Schedule_Interval.HasValue&&Model.Source.Schedule_Interval.Value==24)?"checked":"") name="rad3" id="rad_d" value="rad_d" >
+                                    <label for="rad_d">Daily</label>
+                                </div>
+                                <div class="be-radio inline">
+                                    <input type="radio" @((Model.Source.Schedule_Interval.HasValue&&Model.Source.Schedule_Interval.Value==168)?"checked":"") name="rad3" id="rad_w" value="rad_w">
+                                    <label for="rad_w">Weekly</label>
+                                </div>
+                                <div class="be-radio inline">
+                                    <input type="radio" @((Model.Source.Schedule_Interval.HasValue&&Model.Source.Schedule_Interval.Value==504)?"checked":"") name="rad3" id="rad_m" value="rad_m">
+                                    <label for="rad_m">Monthly</label>
+                                </div>
+                                <div class="be-radio inline">
+                                    <input type="radio" @((Model.Source.Schedule_Interval.HasValue&&Model.Source.Schedule_Interval.Value==1512)?"checked":"") name="rad3" id="rad_q" value="rad_q">
+                                    <label for="rad_q">Quarterly</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">Schedule starts at</label>
+                            <div class="col-sm-6 ">
+                                <input class="form-control form-inline  " style="width:60% !important; display:inline-block;" id="Source_Schedule_Start_Time_D" name="Source.Schedule_Start_Time_D" type="date" value="@(Model.Source.Schedule_Start_Time.HasValue? Model.Source.Schedule_Start_Time.Value.ToString("yyyy-MM-dd") : "")" />
+                                <input class="form-control form-inline " style="width:38.5% !important; display:inline-block;" id="Source_Schedule_Start_Time_T" name="Source.Schedule_Start_Time_T" type="time" value="@(Model.Source.Schedule_Start_Time.HasValue? Model.Source.Schedule_Start_Time.Value.ToString("HH:mm:ss") : "")" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-6 col-md-offset-3">
+                                <input type="submit" value="Save Schedule Setting" class="btn btn-primary" />   
+                               @Html.ActionLink("Run Data Manually", "ExcelManualRunData", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                            </div>
+                        </div>
+                    }                  
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+ 
+@section scripts{
+<script src="~/Content/lib/datetimepicker/js/bootstrap-datetimepicker.min.js" type="text/javascript"></script>
+    <script>
+        $(document).ready(function () {
+            // File input
+            $(".datetimepicker").datetimepicker({
+                autoclose: true,
+                componentIcon: '.mdi.mdi-calendar',
+                navIcons: {
+                    rightIcon: 'mdi mdi-chevron-right',
+                    leftIcon: 'mdi mdi-chevron-left'
+                },
+                initialDate: new Date("@Model.Source.Schedule_Start_Time"),
+                format: 'm/d/yyyy hh:mm:ss P'
+            });
+
+            if (@(Model.Source.Is_Scheduled!=null && Model.Source.Is_Scheduled == 1?1:0)==1) {
+                $("#swSchedule").prop("checked", true);
+            } else {
+                $("#swSchedule").prop("checked", false);
+            }
+
+            $("#swSchedule").change(function () {
+                if (this.checked) {
+                    $("#Source_Is_Scheduled").val(1);
+                } else {
+                    $("#Source_Is_Scheduled").val(0);
+                }
+            });
+
+            $('input[type=radio][name=rad3]').change(function() {
+                console.log(this.value)
+                switch (this.value) {
+                    case 'rad_d':
+                        // hide date select
+                        $("#Source_Schedule_Start_Time_D").hide();
+                        $("#Source_Schedule_Start_Time_T").show();
+                        $("#Source_Schedule_Interval").val(24);
+                        break;
+                    case 'rad_w':
+                        $("#Source_Schedule_Start_Time_D").show();
+                        $("#Source_Schedule_Interval").val(168);
+                        break;
+                    case 'rad_m':
+                        $("#Source_Schedule_Start_Time_D").show();
+                        $("#Source_Schedule_Interval").val(504);
+                        break;
+                    case 'rad_q':
+                        $("#Source_Schedule_Start_Time_D").show();
+                        $("#Source_Schedule_Interval").val(1512);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            if(@((Model.Source.Schedule_Interval.HasValue && Model.Source.Schedule_Interval.Value == 24) ? "true" : "false")==true)
+            {               
+                $("#Source_Schedule_Start_Time_D").hide();
+            }
+
+        });
+    </script>
+
+}
+

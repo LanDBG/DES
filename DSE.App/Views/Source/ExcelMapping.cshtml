@@ -1,0 +1,168 @@
+﻿@model DSE.App.Models.SourceMappingModel
+@{
+    ViewBag.Title = "Data Sources";
+}
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","Source")">Data Sources</a></li>
+        <li><a href="#">@Model.SourceName </a></li>
+        <li class="active"><a href="#"> Mapping </a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        @*<div class="col-sm-12">
+            <div class="panel panel-default ">
+                <div class="panel-heading panel-heading-divider">Current Mapping Data<span class="panel-subtitle"> @Model.SourceName  </span></div>
+                <div class="panel-body">
+                    @if (Model.MappingData != null)
+                    {
+                    <table class="table table-condensed table-hover table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Source View</th>
+                                <th>Source Table</th>
+                                <th>Source Column</th>
+                                @*<th>Ref Table <br /> Column</th>
+                                <th>Target Table</th>
+                                <th>Target Column</th>
+                                <th>Datatype</th>
+                                <th>Is Primary</th>
+                                <th>Allow null</th>
+                                <th>Allow Duplicate</th>
+                                <th>Is Numeric</th>
+                                <th>Is Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (DSE.DataAccess.Models.SourceMapping item in Model.MappingData)
+                                {
+                                <tr>
+                                    <td>@Html.DisplayFor(modelItem => item.Source_view) </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Source_table) </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Source_column) </td>
+                                    @*<td>@Html.DisplayFor(modelItem => item.Source_ref_table) <br /> @Html.DisplayFor(modelItem => item.Source_ref_column) </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Target_table) </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Target_column) </td>
+                                    <td>@Html.DisplayFor(modelItem => item.Target_datatype) </td>
+                                    <td class="cell-detail text-center" style="color: green;">
+                                        @if (item.Target_is_primary_id != null && item.Target_is_primary_id == true)
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                            }
+                                            else
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                            }
+                                    </td>
+                                    <td class="cell-detail text-center" style="color: green;">
+                                        @if (item.Target_is_allow_not_null != null && item.Target_is_allow_not_null == true)
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                            }
+                                            else
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                            }
+                                    </td>
+                                    <td class="cell-detail text-center" style="color: green;">
+                                        @if (item.Target_is_duplicate_value != null && item.Target_is_duplicate_value == true)
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                            }
+                                            else
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                            }
+                                    </td>
+                                    <td class="cell-detail text-center" style="color: green;">
+                                        @if (item.Target_is_numeric != null && item.Target_is_numeric == true)
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                            }
+                                            else
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                            }
+                                    </td>
+                                    <td class="cell-detail text-center" style="color: green;">
+                                        @if (item.Target_is_date != null && item.Target_is_date == true)
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                            }
+                                            else
+                                            {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                            }
+                                    </td>
+                                </tr>
+                                }
+                        </tbody>
+                    </table>
+
+                    <div class="form-group">
+                        <div>
+                            @Html.ActionLink("Validation Now", "ExcelValidation", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>*@
+
+        <div class="col-sm-12">
+            <div class="panel panel-default ">
+                @*<div class="panel-heading panel-heading-divider">Current Mapping Data<span class="panel-subtitle"> @Model.SourceName  </span></div>*@
+                <div class="panel-body"  style="overflow-x:scroll">
+                    @if (Model.MappingTable != null)
+                    {
+                        @*<h4>@Model.MappingTable.TableName</h4>*@
+                            <table class="table table-condensed table-hover table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        @for (int i = 0; i < Model.MappingTable.Columns.Count; i++)
+                                        {
+                                            <th>@Model.MappingTable.Columns[i].ColumnName.Replace("_"," ")</th>
+                                        }
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.MappingTable.Rows.Count; i++)
+                                    {
+                                        <tr>
+                                            @for (int j = 0; j < Model.MappingTable.Columns.Count; j++)
+                                            {
+                                                if (Model.MappingTable.Columns[j].DataType == typeof(bool))
+                                                {
+                                                    <td class="cell-detail text-center" style="color: green;">
+                                                        @if (Model.MappingTable.Rows[i][j] != null && (bool)Model.MappingTable.Rows[i][j] == true)
+                                                        {
+                                                            <span class="mdi mdi-hc-2x mdi-check-circle" title="Active"></span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not active"></span>
+                                                        }
+                                                    </td>
+                                                }
+                                                else
+                                                {
+                                                    <td>@Model.MappingTable.Rows[i][j].ToString()</td>
+                                                }
+                                            }
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            @*<div class="form-group">
+                                <div>
+                                    @Html.ActionLink("Validation Now", "ExcelValidation", new { id = Model.SourceId }, new { @class = "btn btn-primary" })
+                                </div>
+                            </div>*@
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

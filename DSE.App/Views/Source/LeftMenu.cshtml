@@ -1,0 +1,144 @@
+﻿@model IEnumerable<DSE.DataAccess.Models.Source>
+@{
+    string controllerAction = string.Format("{0}/{1}", ViewContext.RouteData.Values["Controller"].ToString(), ViewContext.RouteData.Values["Action"].ToString());
+    var routerValues = ViewContext.ParentActionViewContext?.RouteData.Values;
+    string controller = ViewContext.ParentActionViewContext?.RouteData.Values["Controller"]?.ToString() ?? "";
+    string action = ViewContext.ParentActionViewContext?.RouteData.Values["Action"]?.ToString() ?? "";
+    string id = ViewContext.ParentActionViewContext?.RouteData.Values["id"]?.ToString() ?? "";
+    string source = Request.Params["source"];
+    string activeSectionClass = "Source, DESLog".Contains(controller) ? "text-primary" : "";
+}
+
+@*<li>
+        <a href="@Url.Action("Index", "Source")"><i class="icon mdi mdi-folder"></i><span>Data Sources</span></a>
+    </li>*@
+@{
+    string activeSourceClass = ("SourceIndex").Contains(controller + action) ? "active open" : "";
+
+    // Fix bug lag if add class 'open' on client-side
+    string activeSourceClasss = "";
+    foreach (var item in Model.Where(x => x.SourceType < 3))
+    {
+        bool matchControlAngId = controller.Contains("Source") && id.ToUpper() == item.SourceId.ToString().ToUpper();
+        if (matchControlAngId && action.Contains("Config")
+            || matchControlAngId && action.Contains("Mapping")
+            || matchControlAngId && action.Contains("Validation")
+            || matchControlAngId && (action.Contains("Schedule") || action.Contains("RunData"))
+            || controller == "DESLog" && (id == item.SourceId.ToString() || source == item.SourceId.ToString()))
+        {
+            activeSourceClasss = "active open";
+            break;
+        }
+    }
+}
+<li class="parent @activeSourceClass @activeSourceClasss">
+    <a href="@Url.Action("Index", "Source")"><i class="icon mdi mdi-folder"></i><span onclick="navRedirect('@Url.Action("Index", "Source")')">Data Sources</span></a>
+    <ul class="sub-menu">
+        @foreach (var item in Model.Where(x => x.SourceType < 3))
+        {
+            bool matchControlAngId = controller.Contains("Source") && id.ToUpper() == item.SourceId.ToString().ToUpper();
+            string activeConfigClass = matchControlAngId && action.Contains("Config") ? "active" : "";
+            string activeMappingClass = matchControlAngId && action.Contains("Mapping") ? "active" : "";
+            string activeValidationClass = matchControlAngId && action.Contains("Validation") ? "active" : "";
+            string activeScheduleClass = matchControlAngId && (action.Contains("Schedule") || action.Contains("RunData")) ? "active" : "";
+            string activeLogClass = controller == "DESLog" && (id == item.SourceId.ToString() || source == item.SourceId.ToString()) /*&& action == "Index"*/ ? "active" : "";
+            string parentClass = string.IsNullOrWhiteSpace(activeConfigClass)
+                && string.IsNullOrWhiteSpace(activeMappingClass)
+                && string.IsNullOrWhiteSpace(activeValidationClass)
+                && string.IsNullOrWhiteSpace(activeScheduleClass)
+                && string.IsNullOrWhiteSpace(activeLogClass) ? "" : "active open";
+
+            <li class="parent @parentClass">
+                <a href="#"><span>@item.SourceName</span> @Html.Raw(!item.Status ? "<i class=\"mdi mdi-close-circle\" style=\"color: darkred; float: right; font-size: 20px; margin-right: 10px;\" title=\"Error\"></i>" : "")</a>
+                <ul class="sub-menu" style="background:#f7f7f7 !important">
+                    <li class="@activeConfigClass">
+                        <a href="@Url.Action("Config","Source", new { id = item.SourceId, type = item.SourceType })"><span> @((item.SourceType == 1) ? "Connection" : "Import File") </span></a>
+                    </li>
+                    <li class="@activeMappingClass">
+                        <a href="@Url.Action("Mapping","Source", new { id = item.SourceId, type = item.SourceType })"><span> Mapping</span></a>
+                    </li>
+                    <li class="@activeValidationClass">
+                        <a href="@Url.Action("Validation","Source", new { id = item.SourceId, type = item.SourceType })"><span> Validation</span></a>
+                    </li>
+                    <li class="@activeScheduleClass">
+                        <a href="@Url.Action("Schedule","Source", new { id = item.SourceId, type = item.SourceType })"><span> Schedule & Run</span></a>
+                    </li>
+                    <li class="@activeLogClass">
+                        <a href="@Url.Action("Index","DESLog", new { id = item.SourceId, type = item.SourceType })"><span> Logs</span></a>
+                    </li>
+                </ul>
+            </li>
+        }
+    </ul>
+</li>
+
+@*<li>
+        <a href="@Url.Action("TargetIndex", "Source")"><i class="icon mdi mdi-folder"></i><span>Data targets</span></a>
+    </li>*@
+@{
+    string activeTargetIndexClass = ("SourceTargetIndex").Contains(controller + action) ? "active open" : "";
+
+    // Fix bug lag if add class 'open' on client-side
+    string activeTargetIndexClasss = "";
+    foreach (var item in Model.Where(x => x.SourceType == 3))
+    {
+        bool matchControlAngId = controller.Contains("Source") && id.ToUpper() == item.SourceId.ToString().ToUpper();
+        if (matchControlAngId && action.Contains("Config")
+            || matchControlAngId && action.Contains("Mapping")
+            || matchControlAngId && action.Contains("Validation")
+            || matchControlAngId && action.Contains("Schedule")
+            || controller == "DESLog" && id == item.SourceId.ToString() && action == "Index")
+        {
+            activeTargetIndexClasss = "active open";
+            break;
+        }
+    }
+}
+<li class="parent @activeTargetIndexClass @activeTargetIndexClasss">
+    <a href="@Url.Action("TargetIndex", "Source")"><i class="icon mdi mdi-folder"></i><span onclick="navRedirect('@Url.Action("TargetIndex", "Source")')">Data targets</span></a>
+    <ul class="sub-menu">
+        @foreach (var item in Model.Where(x => x.SourceType == 3))
+        {
+            bool matchControlAngId = controller.Contains("Source") && id.ToUpper() == item.SourceId.ToString().ToUpper();
+            string activeConfigClass = matchControlAngId && action.Contains("Config") ? "active" : "";
+            string activeMappingClass = matchControlAngId && action.Contains("Mapping") ? "active" : "";
+            string activeValidationClass = matchControlAngId && action.Contains("Validation") ? "active" : "";
+            string activeScheduleClass = matchControlAngId && action.Contains("Schedule") ? "active" : "";
+            string activeLogClass = controller == "DESLog" && id == item.SourceId.ToString() && action == "Index" ? "active" : "";
+            string parentClass = string.IsNullOrWhiteSpace(activeConfigClass)
+                    && string.IsNullOrWhiteSpace(activeMappingClass)
+                    && string.IsNullOrWhiteSpace(activeValidationClass)
+                    && string.IsNullOrWhiteSpace(activeScheduleClass)
+                    && string.IsNullOrWhiteSpace(activeLogClass) ? "" : "active open";
+
+
+            <li class="parent @parentClass">
+                <a href="#"><span>@item.SourceName</span> @Html.Raw(!item.Status ? "<i class=\"mdi mdi-close-circle\" style=\"color: darkred; float: right; font-size: 20px; margin-right: 10px;\" title=\"Error\"></i>" : "")</a>
+                <ul class="sub-menu">
+                    <li class="@activeMappingClass">
+                        <a href="@Url.Action("Mapping","Source", new { id = item.SourceId, type = item.SourceType })"><span> Mapping</span></a>
+                    </li>
+                    <li class="@activeValidationClass">
+                        <a href="@Url.Action("Validation","Source", new { id = item.SourceId, type = item.SourceType })"><span> Validation</span></a>
+                    </li>
+                    <li class="@activeScheduleClass">
+                        <a href="@Url.Action("Schedule","Source", new { id = item.SourceId, type = item.SourceType })"><span> Schedule & Run</span></a>
+                    </li>
+                    <li class="@activeLogClass">
+                        <a href="@Url.Action("Index","DESLog", new { id = item.SourceId, type = item.SourceType })"><span> Logs</span></a>
+                    </li>
+                </ul>
+            </li>
+        }
+    </ul>
+</li>
+<script>
+    function aa() {
+        console.log("aaa")
+    }
+    function navRedirect(href) {
+        location.href = href;
+    }
+</script>
+
+

@@ -1,0 +1,61 @@
+﻿@using DSE.DataAccess.Models
+@model IEnumerable<DSE.DataAccess.Models.LogDetailViewModel>
+
+@{
+    ViewBag.Title = "Log detail";
+    Source source = ViewBag.source;
+}
+
+<div class="page-head">
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","DESLog", new { id = source.SourceId, type = 0})">@source.SourceName Logs</a></li>
+        <li class="active"><a href=""title="@ViewBag.id">Detail</a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid"><div class="row">
+    <div class="col-sm-12">
+        <div class="panel panel-default ">
+            <div class="panel-heading panel-heading-divider hide">Log detail<span class="panel-subtitle hide">@ViewBag.id</span></div>
+            <div class="panel-body">
+                <table class="table table-striped table-hover table-fw-widget">
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model.job_name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.step_name)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.run_status)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model.run_duration)
+                        </th>
+                    </tr>
+
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.job_name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.step_name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.run_status)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.run_duration)
+                            </td>
+                        </tr>
+                    }
+
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    
+</div>
+

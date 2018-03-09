@@ -1,0 +1,127 @@
+﻿@model IEnumerable<DSE.DataAccess.Models.Source>
+@using DSE.Common
+@{
+    ViewBag.Title = "Data Targets";
+}
+<div class="page-head">
+    <ol class="breadcrumb">       
+        <li class="active"><a href="#">Data Targets</a></li>
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div role="alert" class="alert alert-danger alert-dismissible">
+                    <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><span class="icon mdi mdi-close-circle-o"></span>
+                    @DSEConstant.Error_Message_Default
+                </div>
+            }
+            <div class="panel panel-default panel-table">               
+                <div class="panel-body">
+                    <div class="table-responsive noSwipe">
+                        <table class="table table-striped table-hover">
+                            <tr>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Type
+                                </th>
+                                <th>
+                                    Scheduled
+                                </th>
+                                <th>
+                                    Frequency
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th>
+                                    Last Run
+                                </th>
+                                <th></th>
+                            </tr>
+
+                            @foreach (var item in Model.Where(x=>x.SourceType==3))
+                            {
+                                <tr>
+                                    <td class="cell-detail">
+                                        @Html.DisplayFor(modelItem => item.SourceName)
+                                    </td>
+                                    <td class="cell-detail">
+                                       
+                                        @if (item.SourceType ==3)
+                                        {
+                                           <span> SQL data source</span>
+                                        }
+                                        else
+                                        {
+                                            <span> Excel file</span>
+                                        }
+                                    </td>
+                                    <td>                                     
+                                        @if (item.Is_Scheduled != null && item.Is_Scheduled == 1)
+                                        {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" style="color: green;"  title="Scheduled"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="mdi mdi-hc-2x mdi-circle-o" title="Not set"></span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.Schedule_Interval.HasValue)
+                                        {
+                                            switch ((int)item.Schedule_Interval.Value)
+                                            {
+                                                case 24:
+                                                    <span>Daily</span>
+                                                    break;
+                                                case 168:
+                                                    <span> Weekly</span>
+                                                    break;
+                                                case 504:
+                                                    <span>Monthly</span>
+                                                    break;
+                                                case 1512:
+                                                    <span>Quarterly</span>
+                                                    break;
+                                                default:
+                                                    break;
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.Status != null && item.Status == true)
+                                        {
+                                            <span class="mdi mdi-hc-2x mdi-check-circle" style="color: green;" title="Done"></span>
+                                        }
+                                        else
+                                        {
+                                            <span class="mdi mdi-hc-2x mdi-close-circle" style="color: darkred;" title="Error"></span>
+                                        }
+                                    </td>
+                                    <td class="cell-detail">
+                                        @Html.DisplayFor(modelItem => item.LastRun)
+                                    </td>
+                                    <td>
+                                       
+                                        @Html.ActionLink("Mapping", "Mapping", new { id = item.SourceId, type = item.SourceType }) 
+                                        | @Html.ActionLink("Validation", "Validation", new { id = item.SourceId, type = item.SourceType })
+                                        | @Html.ActionLink("Schedule", "Schedule", new { id = item.SourceId, type = item.SourceType })
+                                    </td>
+                                </tr>
+                            }
+                        </table>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+

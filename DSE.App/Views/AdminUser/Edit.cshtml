@@ -1,0 +1,196 @@
+﻿@model DSE.DataAccess.Models.User
+@using DSE.App.Helpers
+
+@{
+    ViewBag.Title = "Edit";
+    List<SelectListItem> Roles = ViewBag.Roles as List<SelectListItem>;
+    List<SelectListItem> Clients = ViewBag.Clients as List<SelectListItem>;
+
+    string fullName = string.Format("{0} {1}", Model.FirstName ?? "", Model.LastName ?? "");
+}
+<div class="page-head">
+    <h2 class="page-head-title"> Edit User</h2>
+    <ol class="breadcrumb">
+        <li><a href="@Url.Action("Index","AdminUser")">Users </a></li>
+        <li class="active"><a href="#">@Model.UserName</a></li>
+
+    </ol>
+</div>
+<div class="main-content container-fluid">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="user-display">
+                <div class="user-display-bg"><img src="#/Content/img/user-profile-display.png" alt=""></div>
+                <div class="user-display-bottom">
+                    <div class="user-display-avatar"><img src="@String.Format("https://ui-avatars.com/api/?background=6e9c40&color=fff&font-size=0.4&size=256&name={0}", fullName)" alt="Avatar"></div>
+                    <div class="user-display-info">
+                        <div class="name">@Model.FirstName @Model.LastName</div>
+                        <div class="nick"><span class="mdi mdi-account"></span> @Model.UserName</div>
+                    </div>
+                </div>
+            </div>
+            <div class="user-info-list panel panel-default">
+                <div class="panel-heading panel-heading-divider">Contact</div>
+                <div class="panel-body">
+                    <table class="no-border no-strip skills">
+                        <tbody class="no-border-x no-border-y">
+                            <tr>
+                                <td class="icon"><span class="mdi mdi-calendar-check"></span></td>
+                                <td class="item">Created date<span class="icon s7-gift"></span></td>
+                                <td>@String.Format("{0:D}", Model.CreateDate)</td>
+                            </tr>
+                            <tr>
+                                <td class="icon"><span class="mdi mdi-email"></span></td>
+                                <td class="item">Email<span class="icon s7-map-marker"></span></td>
+                                <td>@Model.Email</td>
+                            </tr>
+                            <tr>
+                                <td class="icon"><span class="mdi mdi-smartphone-android"></span></td>
+                                <td class="item">Mobile<span class="icon s7-phone"></span></td>
+                                <td>@Model.Phone</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    @if (ViewBag.Edit != null)
+                    {
+                        if (ViewData.ModelState.IsValid)
+                        {
+                            <div role="alert" class="alert alert-success alert-dismissible">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><span class="icon mdi mdi-check"></span><strong>Good!</strong> Update successful.
+                            </div>
+                        }
+                        else
+                        {
+                            <div role="alert" class="alert alert-danger alert-dismissible">
+                                <button type="button" data-dismiss="alert" aria-label="Close" class="close"><span aria-hidden="true" class="mdi mdi-close"></span></button><span class="icon mdi mdi-close-circle-o"></span><strong>Danger!</strong> Update unsuccessful.
+                            </div>
+                        }
+                    }
+                    @using (Html.BeginForm("Edit", "AdminUser", FormMethod.Post, new { @class = "form-horizontal group-border-dashed" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(model => model.UserId)
+                        @Html.HiddenFor(model => model.LastLoginDate)
+                        @Html.HiddenFor(model => model.ModificationDate)
+                        @Html.HiddenFor(model => model.CreateDate)
+
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <!-- User Name-->
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.UserName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                @Html.MyValidationMessageFor(model => model.UserName)
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.FirstName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.FirstName)
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.LastName, htmlAttributes: new { @class = "control-label col-md-3" })
+                            <div class="col-sm-6">
+                                @Html.EditorFor(model => model.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                                @Html.MyValidationMessageFor(model => model.LastName)
+                            </div>
+                        </div>
+                        <!-- Role -->
+                        <div class="form-group">
+                            <label class="control-label col-md-3" for="ClientId">Role</label>
+                            <div class="col-sm-6">
+                                <a id="btn-update-role" class="btn btn-default">Update role</a>
+                            </div>
+                        </div>
+                        <!--Client Id-->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.ClientId, htmlAttributes: new { @class = "control-label col-md-3" })
+                                <div class="col-sm-6">
+                                    @Html.DropDownListFor(model => model.ClientId, Clients, new { @class = "form-control" })
+                                    @Html.MyValidationMessageFor(model => model.ClientId)
+                                </div>
+                            </div>
+                        <!-- Address -->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Address, htmlAttributes: new { @class = "control-label col-md-3" })
+                                <div class="col-sm-6">
+                                    @Html.EditorFor(model => model.Address, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.MyValidationMessageFor(model => model.Address)
+                                </div>
+                            </div>
+                        <!-- Email -->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Email, htmlAttributes: new { @class = "control-label col-md-3" })
+                                <div class="col-sm-6">
+                                    @Html.EditorFor(model => model.Email, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.MyValidationMessageFor(model => model.Email)
+                                </div>
+                            </div>
+                        <!-- Phone -->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.Phone, htmlAttributes: new { @class = "control-label col-md-3" })
+                                <div class="col-sm-6">
+                                    @Html.EditorFor(model => model.Phone, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.MyValidationMessageFor(model => model.Phone)
+                                </div>
+                            </div>
+                        <!-- Active -->
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.IsActive, htmlAttributes: new { @class = "control-label col-md-3" })
+                                <div class="col-sm-6">
+                                    @Html.EditorFor(model => model.IsActive, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.MyValidationMessageFor(model => model.IsActive)
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-sm-6 col-md-offset-3">
+                                    <input type="submit" value="Update" class="btn btn-primary" />
+                                </div>
+                            </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="mod-update-role" tabindex="-1" role="dialog" class="modal fade" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" style="max-width: 900px">
+            <div class="modal-header">
+                <button type="button" data-dismiss="modal" aria-hidden="true" class="close"><span class="mdi mdi-close"></span></button>
+                <h3>User roles</h3>
+            </div>
+            <div class="modal-body">
+                <iframe src="@Url.Action("UpdateRoles", "AdminUser", new { userId = Model.UserId})" width="100" height="100"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .modal iframe {
+        width: 100%;
+        height: 400px;
+        border: none;
+    }
+</style>
+@section scripts{
+    <script>
+        function closeModal() {
+            $('#mod-update-role').modal('hide')
+        }
+        $('#btn-update-role').click(function () {
+            $('#mod-update-role').modal('show')
+        })
+    </script>
+}
