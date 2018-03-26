@@ -21,6 +21,7 @@ namespace DSE.App
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             log4net.Config.XmlConfigurator.Configure(new FileInfo(Server.MapPath("~/Web.config")));
+            GlobalConfiguration.Configuration.EnsureInitialized();
         }
     }
 }
