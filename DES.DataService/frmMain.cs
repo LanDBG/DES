@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -10,6 +11,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Web;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using System.Xml;
 
@@ -62,7 +65,7 @@ namespace DES.DataService
             {
                 //If it is time to run, just run RunSchedule
                 DateTime dNextRun = ReadLocalData(out LastIdInTable);
-                if(DateTime.Now >= dNextRun || bRunNow) //Time to run
+                if (DateTime.Now >= dNextRun || bRunNow) //Time to run
                 {
                     RunSchedule();
                     //Write localdata back
@@ -99,21 +102,16 @@ namespace DES.DataService
 
                     foreach (XmlNode child in node.ChildNodes)
                     {
-                        if (child.Name == "QueryString") obj.QueryString = child.InnerText;
                         if (child.Name == "API") obj.API = child.InnerText;
-                        if (child.Name == "Truncate")
-                        {
-                            bool truncate = false;
-                            bool.TryParse(child.InnerText, out truncate);
-                            obj.Truncate = truncate;
-                        }
-
+                        if (child.Name == "GetSetting") obj.GetSetting = child.InnerText;
+                        if (child.Name == "UpdateSetting") obj.UpdateSetting = child.InnerText;
                     }
                     tables.Add(obj);
                 }
             }
-            catch
+            catch (Exception)
             {
+
                 WriteLog("Failed to reading config file");
 
             }
@@ -139,6 +137,22 @@ namespace DES.DataService
             }
             return result;
         }
+
+        private TableSetting GetSetting(Table table)
+        {
+            string data = string.Format("ConfigName={0}", table.Name);
+            string result = APIHelper(table.GetSetting, data, table.Name);
+            JsonSerializer serializer = new JsonSerializer();
+            TableSetting obj = JsonConvert.DeserializeObject<TableSetting>(result);
+            return obj;
+        }
+        private string UpdateSetting(TableSetting setting, Table table)
+        {
+            string data = string.Format("ConfigName={0}&StartValue={1}&EndValue={2}&LastValue={3}",
+                                            setting.ConfigName, setting.StartValue, setting.EndValue, setting.LastValue);
+            return APIHelper(table.UpdateSetting, data, table.Name);
+            
+        }
         private void WriteLocalData(DateTime nextrun, Dictionary<string, int> items) {
             List<string> lines = new List<string>();
             lines.Add("NextRun=" + nextrun.ToString("yyyy-MM-dd HH:mm"));
@@ -150,8 +164,7 @@ namespace DES.DataService
         }
         #endregion
 
-        #region Helper
-
+        #region Main processing
 
         private void RunSchedule() {
             List<Table> tables = ReadConfig();
@@ -162,69 +175,185 @@ namespace DES.DataService
         }
         private void ProcessTable(Table table)
         {
-            DataSet ds = new DataSet();
-            string sError = "";
+            
             WriteLog("Started processing table " + table.Name);
-            //Master/Lookup table
-            if (table.Truncate)
+            TableSetting setting = GetSetting(table);
+            if (setting.Active)
             {
-                if (SqlHelper.ExecuteSQLDataSet(ds, table.QueryString, out sError) > -1)
+                #region Master/Truncate table
+                if (setting.Truncate)
                 {
-                    DataTable dt = ds.Tables[0];
-                    string data = string.Empty;
-                    //Get header
-                    foreach (DataColumn col in dt.Columns)
+                    int round = 0;
+                    string minvalue = "";
+                    while (true)
                     {
-                        data += col.ColumnName + ",";
-                    }
-                    data = data.Substring(0, data.Length - 1) + System.Environment.NewLine;
-                    //Get content of data
-                    foreach (DataRow row in dt.Rows)
-                    {
-                        string content = "";
-                        for (int index = 0; index < dt.Columns.Count; index++)
+                        string query = string.Format("SELECT TOP {0} {1} FROM {2} WHERE 1 = 1 {3} ORDER BY {4} ASC",
+                                                                setting.RowPerRound,      //0
+                                                                setting.Columns,          //1
+                                                                setting.SourceTable,      //2
+                                                                round == 0 ? "" : " AND " + setting.PrimaryKey + " > '" + minvalue + "'", //3
+                                                                setting.PrimaryKey        //4
+                                                                );
+                        string currentmaxvalue = "";
+                        string data = GetData(query, setting, out currentmaxvalue);
+                        if (!string.IsNullOrEmpty(data))
                         {
-                            content += "'" + row[index].ToString().Replace("'","''") + "',";
+                            PostDataToAPI(table.API, data, round == 0, table.Name, round);
+                            round++;
+
+                            minvalue = currentmaxvalue;
                         }
-                        content = content.Length > 0 ? content.Substring(0, content.Length - 1) : content;
-                        data += content + "\n";
+                        else break;
                     }
-                    Task.Run(() => DataAsync(table.API, data, table.Truncate, table.Name));
                 }
+                #endregion
+                #region Event table - get config from server
                 else
-                    WriteLog(table.Name + "Failed : " + sError);
+                {
+
+                    int round = 0;
+                    string minvalue = "";
+                    while (true)
+                    {
+                        string query = string.Format("SELECT TOP {0} {1} FROM {2} WHERE 1 = 1 {3} {4} ORDER BY {5} ASC",
+                                                                setting.RowPerRound,      //0
+                                                                setting.Columns,          //1
+                                                                setting.SourceTable,      //2
+                                                                round == 0 ?            //3
+                                                                        (string.IsNullOrEmpty(setting.LastValue) ? "" :
+                                                                        " AND " + setting.PrimaryKey + " > '" + setting.LastValue + "'") :
+                                                                        " AND " + setting.PrimaryKey + " > '" + minvalue + "'",
+                                                                " AND (" + setting.WhereColumn + " BETWEEN '" + setting.StartValue + "' AND '" + setting.EndValue + "'" + ")",   //4
+                                                                setting.PrimaryKey); //5
+                        string currentmaxvalue = "";
+                        string data = GetData(query, setting, out currentmaxvalue);
+                        if (!string.IsNullOrEmpty(data))
+                        {
+                           
+                            PostDataToAPI(table.API, data, false, table.Name, round);
+                            round++;
+
+                            minvalue = currentmaxvalue;
+                        }
+                        else break;
+                    }
+                    //Update setting back to server
+                    setting.StartValue = setting.EndValue;
+                    setting.LastValue = FormatData(minvalue);
+                    int number = 0;
+                    if (int.TryParse(setting.EndValue, out number)) //if number
+                    {
+                        setting.EndValue = (number + setting.Sequence).ToString();
+                    }
+                    else //if a date
+                    {
+                        DateTime dt;
+                        if (DateTime.TryParse(setting.EndValue, out dt))
+                        {
+                            setting.EndValue = dt.AddHours(setting.Sequence).ToString("yyyy-MM-dd HH:mm:ss");
+                        }
+                    }
+                    string response = UpdateSetting(setting, table);
+                    WriteLog("Update setting : " + response);
+                }
             }
-            //Event table - should check last id 
-            //else
-            //{
-                
-            //}
+            #endregion
             WriteLog("End of processing table " + table.Name);
         }
-        public async Task DataAsync(string webAPI, string data, bool isTruncate, string tablename)
+        #endregion
+
+        #region Helper
+        private string FormatData(string s) {
+            int num;
+            if(int.TryParse(s, out num))
+            {
+                return num.ToString();
+            }
+            else
+            {
+                DateTime dt;
+                if (DateTime.TryParse(s, out dt))
+                    return dt.ToString("yyyy-MM-dd HH:mm:ss");
+                else return "";
+            }
+        }
+        private string GetData(string query, TableSetting setting, out string minvalue)
         {
-            Uri uri = new Uri(webAPI);
-            string host = uri.Scheme + Uri.SchemeDelimiter + uri.Host + ":" + uri.Port;
-            string query = uri.PathAndQuery;
+            string data = string.Empty;
+            minvalue = "";
+            DataSet ds = new DataSet();
+            string sError = "";
+            if (SqlHelper.ExecuteSQLDataSet(ds, query, out sError) > -1)
+            {
+                DataTable dt = ds.Tables[0];
+                if (dt.Rows.Count == 0) return "";
+                else
+                    //get max value
+                    minvalue = dt.Rows[dt.Rows.Count - 1][setting.PrimaryKey].ToString();
+               //Get header
+                foreach (DataColumn col in dt.Columns)
+                {
+                    data += col.ColumnName + ",";
+                }
+                data = data.Substring(0, data.Length - 1) + System.Environment.NewLine;
+                //Get content of data
+                foreach (DataRow row in dt.Rows)
+                {
+                    string content = "";
+                    for (int index = 0; index < dt.Columns.Count; index++)
+                    {
+                        content += "'" + row[index].ToString().Replace("'", "''") + "',";
+                    }
+                    content = content.Length > 0 ? content.Substring(0, content.Length - 1) : content;
+                    data += content + "\n";
+                }
+                
+            }
+            else
+                WriteLog("Read data from " + setting.SourceTable + " Failed : " + sError);
+
+            return data;
+        }
+        private bool PostDataToAPI(string webAPI, string data, bool isTruncate, string tablename, int round)
+        {
+            string postData = string.Format("Truncate={0}&Data={1}", isTruncate ? "True" : "False", HttpUtility.UrlEncode(data));
+            string result = APIHelper(webAPI, postData, tablename);
+            WriteLog(tablename + " post data to API (round " + (round + 1) + "):" + result);
+            return result == "Success";
+
+        }
+        private string APIHelper(string webAPI, string data, string tablename)
+        {
             try
             {
-                using (var client = new HttpClient())
+                var cookies = new CookieContainer();
+                var request = (HttpWebRequest)WebRequest.Create(webAPI);
+                request.Method = "POST";
+                request.ContentType = "application/x-www-form-urlencoded";
+                request.CookieContainer = cookies;
+                byte[] postBytes = Encoding.Default.GetBytes(data);
+                request.ContentLength = postBytes.Length;
+                using (Stream body = request.GetRequestStream())
                 {
-                    client.BaseAddress = new Uri(host);
-                    var content = new FormUrlEncodedContent(new[]
-                    {
-                        new KeyValuePair<string, string>("Truncate", isTruncate ? "True" : "False"),
-                        new KeyValuePair<string, string>("Data", data)
-                    });
-                    var result = await client.PostAsync(query, content);
-                    string resultContent = await result.Content.ReadAsStringAsync();
-                    WriteLog("Post data to API ( " + tablename + "): " + resultContent);
-                    
+                    body.Write(postBytes, 0, postBytes.Length);
                 }
+
+                WebResponse response = request.GetResponse();
+                var requestStream = response.GetResponseStream();
+                var streamReader = new StreamReader(requestStream);
+                string result = streamReader.ReadToEnd();
+                
+                return result;
             }
-            catch(Exception ex) { WriteLog(ex.Message); }
+            catch (Exception ex)
+            {
+                WriteLog("Post data to API ( " + tablename + ") Exception: " + ex.Message);
+                return ex.Message;
+            }
+
         }
 
+        
         #endregion
 
         #region Logger
