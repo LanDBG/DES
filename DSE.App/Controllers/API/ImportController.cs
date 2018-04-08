@@ -25,7 +25,7 @@ namespace DSE.App.Controllers.API
             try
             {
                 string insertstatement = StringToDatatable(body.Data, tablename);
-                //WriteLog(insertstatement);
+                WriteLog(insertstatement);
                 using (SqlConnection con = new SqlConnection(dseCnnString))
                 {
                     con.Open();
@@ -46,6 +46,89 @@ namespace DSE.App.Controllers.API
             }
             catch (Exception ex)
             {
+                //WriteLog(ex.Message);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+        [Route("api/GetSetting/{configname}")]
+        [HttpPost]
+        [ResponseType(typeof(TableSetting))]
+        public HttpResponseMessage GetSetting(string configname, [FromBody]TableSetting body)
+        {
+            if (body == null || body.ConfigName == null)
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Invalid data");
+            
+            try
+            {
+                TableSetting obj = new TableSetting();
+                obj.ConfigName = body.ConfigName;
+                using (SqlConnection con = new SqlConnection(dseCnnString))
+                {
+                    SqlCommand cmd = new SqlCommand("pr_table_configure_get", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@config_name", body.ConfigName);
+                    con.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        reader.Read();
+                        obj.WhereColumn = reader["where_column"] == DBNull.Value ? "" : (string)reader["where_column"];
+                        obj.StartValue = reader["start_value"] == DBNull.Value ? "" : (string)reader["start_value"];
+                        obj.EndValue = reader["end_value"] == DBNull.Value ? "" : (string)reader["end_value"];
+                        obj.Sequence = reader["sequence"] == DBNull.Value ? 0 : (int)reader["sequence"];
+                        obj.LastValue = reader["last_value"] == DBNull.Value ? "" : (string)reader["last_value"];
+
+                        obj.SourceTable = reader["source_table"] == DBNull.Value ? "" : (string)reader["source_table"];
+                        obj.Columns = reader["columns"] == DBNull.Value ? "" : (string)reader["columns"];
+                        obj.PrimaryKey = reader["primary_key"] == DBNull.Value ? "" : (string)reader["primary_key"];
+                        obj.RowPerRound = reader["row_per_round"] == DBNull.Value ? 0 : (int)reader["row_per_round"];
+                        obj.Truncate = reader["is_truncate"] == DBNull.Value ? false : (bool)reader["is_truncate"];
+                        obj.Active = reader["is_active"] == DBNull.Value ? false : (bool)reader["is_active"];
+                        reader.Close();
+                    }
+                    con.Close();
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, obj);
+            }
+            catch (Exception ex)
+            {
+                //WriteLog(ex.Message);
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+        [Route("api/UpdateSetting/{configname}")]
+        [HttpPost]
+        [ResponseType(typeof(string))]
+        public HttpResponseMessage UpdateSetting(string configname, [FromBody]TableSetting body)
+        {
+            if (body == null || body.ConfigName == null)
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Invalid data");
+            if (body.StartValue == null || body.EndValue == null)
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, "Invalid start & end value");
+            try
+            {
+                //WriteLog(insertstatement);
+                int rowEffected = 0;
+                using (SqlConnection con = new SqlConnection(dseCnnString))
+                {
+                    SqlCommand cmd = new SqlCommand("pr_table_configure_update", con);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@config_name", body.ConfigName);
+                    cmd.Parameters.AddWithValue("@start_value", body.StartValue);
+                    cmd.Parameters.AddWithValue("@end_value", body.EndValue);
+                    cmd.Parameters.AddWithValue("@last_value", body.LastValue);
+                    con.Open();
+                    rowEffected = cmd.ExecuteNonQuery();
+                    con.Close();
+                }
+                return Request.CreateResponse(HttpStatusCode.OK, "Success");
+            }
+            catch (Exception ex)
+            {
+                //WriteLog(ex.Message);
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, ex.Message);
             }
 
@@ -93,6 +176,8 @@ namespace DSE.App.Controllers.API
             // Close the stream:
             log.Close();
         }
+
+       
         #endregion
     }
 }
