@@ -148,8 +148,8 @@ namespace DES.DataService
         }
         private string UpdateSetting(TableSetting setting, Table table)
         {
-            string data = string.Format("ConfigName={0}&StartValue={1}&EndValue={2}&LastValue={3}",
-                                            setting.ConfigName, setting.StartValue, setting.EndValue, setting.LastValue);
+            string data = string.Format("ConfigName={0}&StartValue={1}&EndValue={2}&LastValue={3}&Truncate={4}",
+                                            setting.ConfigName, setting.StartValue, setting.EndValue, setting.LastValue, setting.Truncate);
             return APIHelper(table.UpdateSetting, data, table.Name);
             
         }
@@ -205,6 +205,8 @@ namespace DES.DataService
                         }
                         else break;
                     }
+                    string response = UpdateSetting(setting, table);
+                    WriteLog("Update setting (" + table.Name + "): " + response);
                 }
                 #endregion
                 #region Event table - get config from server
@@ -254,10 +256,11 @@ namespace DES.DataService
                         }
                     }
                     string response = UpdateSetting(setting, table);
-                    WriteLog("Update setting : " + response);
+                    WriteLog("Update setting (" + table.Name + "): " + response);
                 }
+                #endregion
             }
-            #endregion
+
             WriteLog("End of processing table " + table.Name);
         }
         #endregion
@@ -370,7 +373,25 @@ namespace DES.DataService
             {
                 this.txtLog.Text += text + " at " + DateTime.Now.ToString() + System.Environment.NewLine;
             }
+            WriteTextLog(text);
+        }
+        private void WriteTextLog(string text)
+        {
+            StreamWriter log;
+            string fileName = "Log\\" + DateTime.Now.ToString("yyyyMMdd") + ".txt";
+            if (!File.Exists(fileName))
+            {
+                log = new System.IO.StreamWriter(fileName);
+            }
+            else
+            {
+                log = File.AppendText(fileName);
+            }
 
+            // Write to the file:
+            log.WriteLine(text + " at " + DateTime.Now.ToString());
+            // Close the stream:
+            log.Close();
         }
         #endregion
 

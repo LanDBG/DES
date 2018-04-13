@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
     <Tables>
-        <Table name="BadgeStat">
-            <QueryString>SELECT [ID] as id ,[NAME] as name FROM [dbo].[BADGSTAT]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_badgstat</API>
-            <Truncate>true</Truncate>
-        </Table> 
+          <Table name="BadgeStat">
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_badgstat</API>
+          <GetSetting>http://localhost:90/api/GetSetting/BadgeStat</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/BadgeStat</UpdateSetting>
+        </Table>
         <Table name="Badge">
-            <QueryString>SELECT [ID] as id,[ISSUECODE] as issuecode, [EMPID] as empid,[STATUS] as status,[TYPE] as type,[ACTIVATE] as activate,[DEACTIVATE] as deactivate FROM [dbo].[BADGE]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_bagde</API>
-            <Truncate>true</Truncate>
-        </Table> 
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_bagde</API>
+          <GetSetting>http://localhost:90/api/GetSetting/Badge</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/Badge</UpdateSetting>
+        </Table>
         <Table name="Reader">
-            <QueryString>SELECT [READERDESC] as readerdesc,[PANELID] as panelid,[READERID] as readerid FROM [dbo].[READER]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_reader</API>
-            <Truncate>true</Truncate>
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_reader</API>
+          <GetSetting>http://localhost:90/api/GetSetting/Reader</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/Reader</UpdateSetting>
         </Table>
         <Table name="Emp">
-            <QueryString>SELECT [ID] as id,[LASTNAME] as lastname,[FIRSTNAME] as firstname,[MIDNAME] as midname,[SSNO] as ssno FROM [dbo].[EMP]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_emp</API>
-            <Truncate>true</Truncate>
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_emp</API>
+          <GetSetting>http://localhost:90/api/GetSetting/Emp</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/Emp</UpdateSetting>
         </Table>
         <Table name="UDFEmp">
-            <QueryString>SELECT [ID],[ADDR1],[ADDR2],[CITY],[STATE],[ZIP],[PHONE],[BDATE],[TITLE],[DEPT],[DIVISION],[LOCATION],[FLOOR],[QID] FROM [dbo].[UDFEMP]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_udfemp</API>
-            <Truncate>true</Truncate>
-        </Table> 
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_udfemp</API>
+          <GetSetting>http://localhost:90/api/GetSetting/UDFEmp</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/UDFEmp</UpdateSetting>
+        </Table>
         <Table name="WORLDTZ">
-            <QueryString>SELECT  [WORLDTZID],[DisplayName],[GMTOFFSET],[DST],[StandardMonth],[StandardDay],[StandardWeek],[DaylightMonth],[DaylightDay],[DaylightWeek],[Bias],[StandardBias],[DaylightBias],[StandardHour],[DaylightHour],[STANDARDSECOND],[DAYLIGHTMINUTE],[DAYLIGHTSECOND],[STANDARDMINUTE],[WINDOWS_TZID]  FROM [dbo].[WORLDTZ]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_worldtz</API>
-            <Truncate>true</Truncate>
-        </Table> 
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_worldtz</API>
+          <GetSetting>http://localhost:90/api/GetSetting/WORLDTZ</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/WORLDTZ</UpdateSetting>
+        </Table>
         <Table name="Event">
-            <QueryString>SELECT [SERIALNUM],[CARDNUM],[EMPID],[DEVID],[MACHINE],[EVENTTYPE],[EVENTID],[EVENTIME],[EVENT_TIME_UTC]  FROM [dbo].[EVENTS]</QueryString>
-            <API>http://localhost:90/api/ImportData/temp_staging_lenel_events</API>
-            <Truncate>false</Truncate>
-        </Table> 
+          <API>http://localhost:90/api/ImportData/temp_staging_lenel_events</API>
+          <GetSetting>http://localhost:90/api/GetSetting/Event</GetSetting>
+          <UpdateSetting>http://localhost:90/api/UpdateSetting/Event</UpdateSetting>
+        </Table>
+       
     </Tables>
 
